@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="autor" name="RshlDv">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Agenda Personal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-[#fbf9f4] text-[#202020] min-h-screen">
+    <div class="flex min-h-screen">
+        <aside class="w-64 bg-[#f5f1ea] p-8 border-r border-[#eadecc] flex flex-col justify-between">
+            <div>
+                <div class="font-serif-agenda text-3xl font-bold text-[#d0532b] mb-10">Tu Agenda Personal</div>
+                <nav class="space-y-2">
+                    <a href="/" class="flex items-center gap-3 px-4 py-3 bg-[#eae3d5] rounded-xl font-medium text-sm">
+                        <i class="fa-solid fa-table-cells-large text-gray-600"></i>Dashboard
+                    </a>
+                    <a href="/calendario"
+                        class="flex items-center gap-3 px-4 py-3 hover:bg-[#eae3d5] rounded-xl font-medium text-sm transition-colors">
+                        <i class="fa-regular fa-calendar text-gray-600"></i>Calendario
+                    </a>
+                </nav>
+            </div>
+            <!-- Filtro Fecha  -->
+            <div class="pt-6 border-t border-[#eadecc]">
+                <form action="/" method="GET" id="formFiltroFecha">
+                    <label for="fechaFiltro"
+                        class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                        <i class="fa-regular fa-calendar-days mr-1"></i>Filtrar por Fecha
+                    </label>
+                    <input type="date" id="fechaFiltro" name="fechaFiltro" th:value="${fechaFiltro}"
+                        onchange="document.getElementById('formFiltroFecha').submit()"
+                        class="w-full p-2 text-sm bg-white border border-[#eadecc] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#d0532b]">
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="flex-1 p-12 max-w-7xl">
+            <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+                <div>
+                    <h1 class="font-serif-agenda text-5xl font-bold tracking-tight mb-2">Dashboard</h1>
+                    <p class="text-gray-500 text-lg">Agendemos nuestros planes :D</p>
+                </div>
+
+                <!-- Buscador -->
+                <form action="/" method="GET" class="relative w-full md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
+                    <input type="text" name="buscar" th:value="${buscar}" placeholder="Buscar eventos..."
+                        class="w-full pl-11 pr-4 py-2.5 bg-white border border-[#eadecc] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#a3b899]">
+                </form>
+            </header>
+
+            <!-- Contadores -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+                <div
+                    class="bg-white p-6 rounded-2xl border border-[#eadecc] flex flex-col justify-between h-32 shadow-sm">
+                    <span class="text-sm font-medium text-gray-500">Hoy</span>
+                    <span class="font-serif-agenda text-4xl font-bold" th:text="${totalHoy}">0</span>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-2xl border border-[#eadecc] flex flex-col justify-between h-32 shadow-sm">
+                    <span class="text-sm font-medium text-gray-500">Esta Semana</span>
+                    <span class="font-serif-agenda text-4xl font-bold" th:text="${totalSemana}">0</span>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-2xl border border-[#eadecc] flex flex-col justify-between h-32 shadow-sm">
+                    <span class="text-sm font-medium text-gray-500">Atrasadas</span>
+                    <span class="font-serif-agenda text-4xl font-bold text-red-600" th:text="${atrasadas}">0</span>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-2xl border border-[#eadecc] flex flex-col justify-between h-32 shadow-sm">
+                    <span class="text-sm font-medium text-gray-500">Total</span>
+                    <span class="font-serif-agenda text-4xl font-bold" th:text="${total}">0</span>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <section class="lg:col-span-3">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-serif-agenda text-2xl font-bold">Próximos Eventos</h2>
+
+                        <!-- Boton agregar -->
+                        <button onclick="abrirModalAgregar()"
+                            class="bg-[#d0532b] text-white px-5 py-2 rounded-full text-sm font-medium shadow-md hover:bg-[#b04320] transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i> Agregar
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div th:each="evento : ${eventos}"
+                            class="bg-white p-6 rounded-2xl border-y border-r border-[#eadecc] flex flex-col justify-between shadow-sm relative transition-all hover:shadow-md"
+                            th:classappend="${evento.completado} ? 'opacity-60' : ''"
+                            th:style="'border-left: 8px solid ' + (${evento.categoria != null} ? ${evento.categoria.colorHex} : '#cbd5e1')">
+
+                            <div>
+                                <div class="flex justify-between items-start gap-2 mb-3">
+                                    <h3 class="text-lg start font-bold text-gray-900"
+                                        th:classappend="${evento.completado} ? 'line-through text-gray-400' : ''"
+                                        th:text="${evento.titulo}">Título</h3>
+                                    <!-- Colores Dinámicos -->
+                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-md"
+                                        th:if="${evento.categoria != null}"
+                                        th:style="'background-color: ' + ${evento.categoria.colorHex} + '22; color: ' + ${evento.categoria.colorHex}"
+                                        th:text="${evento.categoria.nombre}"></span>
+                                    <span th:if="${evento.categoria == null}"
+                                        class="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-md">Sin
+                                        Etiqueta</span>
+                                </div>
+
+                                <p class="text-sm text-gray-600 mb-4" th:text="${evento.descripcion}">Descripción...</p>
+
+                                <div class="space-y-1.5 text-xs text-gray-500 mb-4">
+                                    <div><i class="fa-regular fa-calendar text-gray-400 mr-2 w-4"></i><span
+                                            th:text="${evento.fecha}"></span></div>
+                                    <div><i class="fa-regular fa-clock text-gray-400 mr-2 w-4"></i><span
+                                            th:text="${evento.hora}"></span></div>
+                                    <div th:if="${evento.ubicacion != null && !evento.ubicacion.isEmpty()}"><i
+                                            class="fa-solid fa-location-dot text-gray-400 mr-2 w-4"></i><span
+                                            th:text="${evento.ubicacion}"></span></div>
+                                    <div th:if="${evento.nota != null && !evento.nota.isEmpty()}"><i
+                                            class="fa-regular fa-sticky-note text-gray-400 mr-2 w-4"></i><span
+                                            th:text="${evento.nota}"></span></div>
+                                </div>
+                            </div>
+
+                            <!-- Acciones en tarjetas -->
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-2">
+                                <div class="flex gap-3">
+                                    <form th:action="@{/eventos/completar/{id}(id=${evento.id})}" method="POST">
+                                        <button type="submit"
+                                            class="text-xs font-medium text-emerald-600 hover:underline">
+                                            <i class="fa-regular fa-circle-check mr-1"></i><span
+                                                th:text="${evento.completado} ? 'Completado' : 'Listo'"></span>
+                                        </button>
+                                    </form>
+                                    <!-- Boton editar -->
+                                    <button th:if="${!evento.completado}" type="button"
+                                        class="text-xs font-medium text-blue-600 hover:underline"
+                                        th:data-id="${evento.id}" th:data-titulo="${evento.titulo}"
+                                        th:data-desc="${evento.descripcion}" th:data-fecha="${evento.fecha}"
+                                        th:data-hora="${evento.hora}" th:data-ubicacion="${evento.ubicacion}"
+                                        th:data-nota="${evento.nota}"
+                                        th:data-categoria="${evento.categoria != null ? evento.categoria.id : ''}"
+                                        onclick="abrirModalEditar(this)">
+                                        <i class="fa-regular fa-pen-to-square mr-1"></i>Editar
+                                    </button>
+                                </div>
+                                <form th:action="@{/eventos/eliminar/{id}(id=${evento.id})}" method="POST">
+                                    <!-- Boton borrar -->
+                                    <button type="submit" class="text-xs font-medium text-red-600 hover:underline">
+                                        <i class="fa-solid fa-trash-can mr-1"></i>Borrar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Categorias -->
+                <aside class="lg:col-span-1">
+                    <div class="bg-[#f6f3ed] border border-[#eadecc] rounded-2xl p-6 shadow-sm">
+                        <h3 class="font-serif-agenda text-xl font-bold mb-4">Categorías</h3>
+                        <div class="flex flex-col gap-3 mb-6">
+                            <div th:each="cat : ${categorias}"
+                                class="bg-white border border-[#eadecc] px-4 py-2.5 rounded-xl text-sm font-medium flex justify-between items-center w-full shadow-sm">
+                                <span class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full"
+                                        th:style="'background-color: ' + ${cat.colorHex}"></span>
+                                    <span th:text="${cat.nombre}"></span>
+                                </span>
+                            </div>
+                            <div th:if="${categorias.isEmpty()}" class="text-xs text-gray-400 italic text-center py-2">
+                                No hay categorías creadas</div>
+                        </div>
+
+                        <form th:action="@{/categorias}" method="POST" class="pt-4 border-t border-[#eadecc]">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Crear
+                                Nueva Categoría</label>
+                            <div class="flex gap-2 items-center">
+                                <div
+                                    class="relative flex items-center justify-center w-8 h-8 rounded-xl bg-white border border-[#eadecc] overflow-hidden shrink-0">
+                                    <i
+                                        class="fa-solid fa-palette text-xs text-gray-400 pointer-events-none absolute"></i>
+                                    <label for="colorHexInput" class="sr-only">Elegir color de la categoría</label>
+                                    <input type="color" id="colorHexInput" name="colorHex" value="#d0532b"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                </div>
+                                <input type="text" name="nombre" required placeholder="Ej: Reunion"
+                                    class="flex-1 px-3 py-2 bg-white border border-[#eadecc] rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-[#d0532b]">
+                                <button type="submit"
+                                    class="bg-[#a3b899] hover:bg-[#8da283] text-white px-3 py-2 rounded-xl text-xs font-bold h-8 flex items-center justify-center">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <div id="modalEvento" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full border border-[#eadecc] shadow-xl">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-[#202020]">Nuevo Evento</h2>
+            <form id="modalForm" action="/eventos" method="POST" class="space-y-4">
+                <div>
+                    <label for="insTitulo" class="block text-xs font-semibold text-gray-500 mb-1">Título</label>
+                    <input type="text" id="insTitulo" name="titulo" required placeholder="Título del evento"
+                        class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm focus:ring-1 focus:ring-[#d0532b] outline-none">
+                </div>
+                <div>
+                    <label for="insDesc" class="block text-xs font-semibold text-gray-500 mb-1">Descripción</label>
+                    <textarea id="insDesc" name="descripcion" placeholder="Detalles del evento..."
+                        class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm h-16 outline-none"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="insFecha" class="block text-xs font-semibold text-gray-500 mb-1">Fecha</label>
+                        <input type="date" id="insFecha" name="fecha" required
+                            class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label for="insHora" class="block text-xs font-semibold text-gray-500 mb-1">Hora</label>
+                        <input type="time" id="insHora" name="hora" required
+                            class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Ubicación</label>
+                        <input type="text" id="insUbicacion" name="ubicacion" placeholder="Lugar"
+                            class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Nota Extra</label>
+                        <input type="text" id="insNota" name="nota" placeholder="Notas"
+                            class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Categoría</label>
+                    <select id="insCategoria" name="categoriaId"
+                        class="w-full p-2.5 bg-gray-50 border border-[#eadecc] rounded-xl text-sm"
+                        aria-label="Seleccionar categoría">
+                        <option value="">Sin Etiqueta</option>
+                        <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="cerrarModal()"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-sm font-medium">Cancelar</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-[#d0532b] hover:bg-[#b04320] text-white rounded-xl text-sm font-medium">Guardar
+                        Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/js/dashboard.js}"></script>
+</body>
+
+</html>
