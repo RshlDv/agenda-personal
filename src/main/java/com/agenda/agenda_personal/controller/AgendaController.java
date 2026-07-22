@@ -1,13 +1,13 @@
 package com.agenda.agenda_personal.controller;
 
-import java.util.List;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.ui.Model;
-import org.springframework.stereotype.Controller;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -96,6 +96,17 @@ public class AgendaController {
                     .build();
             categoriaRepository.save(nuevaCat);
         }
+        return "redirect:/";
+    }
+
+    @PostMapping("/categorias/eliminar/{id}")
+    public String eliminarCategoria(@PathVariable Long id) {
+        categoriaRepository.findById(id).ifPresent(categoria -> {
+            if (categoria.getEventos() != null) {
+                categoria.getEventos().forEach(evento -> evento.setCategoria(null));
+            }
+            categoriaRepository.delete(categoria);
+        });
         return "redirect:/";
     }
 
