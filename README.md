@@ -4,7 +4,7 @@ Una aplicación web diseñada para la gestión de eventos y tareas diarias que p
 ---
 ### Tecnologías:
 
-* **Backend:** Java, Spring Boot
+* **Backend:** Java, Spring Boot, PostgreSQL
 * **Frontend:** HTML, CSS, JavaScript
 * **Motor de Plantillas:** Thymeleaf
 * **Estilos:** Tailwind CSS
